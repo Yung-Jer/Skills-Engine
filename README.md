@@ -64,8 +64,8 @@ In order to weigh each skill differently based on the project period, I first as
 - All the experience levels are using `year(s)` as unit.
 - All the skills extracted from the resume have at least 1 year of experience.
 - The project description shall come after the project period.
-- The year of experience is computed by taking the ceiling of the year difference, i.e. $\textbf{difference in time} // \textbf{365 days} + 1$
-- When there are multiple projects of different periods having the same skill, the experience level will be computed by $max(\textbf{years of project 1}, (\textbf{years of project 2}...))$.
+- The year of experience is computed by taking the ceiling of the year difference, i.e. $\text{difference in time} // \text{365 days} + 1$
+- When there are multiple projects of different periods having the same skill, the experience level will be computed by $max(\text{years of project 1}, \text{years of project 2}...)$.
 
 Example: extract all the sections out using date range as guidance from a resume.
 
