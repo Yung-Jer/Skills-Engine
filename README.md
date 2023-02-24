@@ -56,7 +56,7 @@ In order to efficiently extract skills out from the resume, use free online **Em
     # }
     ```
 
-### Step 2 Experience Level Tagging
+### Step 2 Identification of Year of Experience
 
 The output shown above is implicitly indicating that all the skills have the same experience level. This is undesirable as there are much more information in the resume that can be used to weigh the skills differently, e.g. project period. 
 
