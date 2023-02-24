@@ -56,7 +56,7 @@ In order to efficiently extract skills out from the resume, use free online **Em
     # }
     ```
 
-### Step 2 Experience Level Tagging
+### Step 2 Identification of Year of Experience
 
 The output shown above is implicitly indicating that all the skills have the same experience level. This is undesirable as there are much more information in the resume that can be used to weigh the skills differently, e.g. project period. 
 
@@ -109,3 +109,59 @@ skills_experience_level_identification(resume_string)
 #   'policy development': 1
 # }
 ```
+
+## Step 4: Identification of Significant Skills
+
+We first assumed that all the candidates that are applying for a specific role **must** be qualified, i.e. they have all the skills required for the particular role. With this assumption, we can do aggregation for all the resumes that belong to the same category and find out which skills appear the most. The skills with high frequency indicate that they are the common skills required for the particular role. 
+
+We then set the significance level $\alpha$ as .9, hence all the skills below 90 percentile will be treated as not so significant. 
+
+Example: We use the **percentile** method to set the threshold for classifying the skills that appear at least once, and decide if they are significant or not. Then, we scale the skills' frequency to the range of [0, 1]. This is to help us to decide whether if we need high level of skill competency to standout from peers. We save all the remaining skill with the corresponding competency level required into a dictionary
+
+```
+# agg_data is the dataset after doing groupby(['category']).sum()
+# find the threshold of 90 percentile
+np.percentile(agg_data['ACCOUNTANT'][agg_data['ACCOUNTANT'] != 0], 90)
+
+# If value > 0.7, skill level required is 5; 
+# If 0.7 >= value > 0.3, skill level required is 4;
+# If 0.3 >= value, skill level required is 3;
+skills_required = {}
+
+for col in agg_data.columns[1:]:
+    print(col)
+    series = agg_data[col][agg_data[col] > np.percentile(agg_data[col][agg_data[col] != 0], 90)]
+    scaled_series = series.apply(lambda x: (x - series.min()) / (series.max() - series.min()))
+    binned_series = scaled_series.apply(lambda x: 5 if x > 0.7 else 4 if x > 0.3 else 3)
+    skills_required[col] = binned_series.to_dict()
+    
+# Output: where the value is the competency level based on my client's business settings
+# {'ADVOCATE': 
+#  {'active listening': 3,
+#   'administrative support': 3,
+#   'advocacy': 3,
+#   'agenda': 3,
+#   'auditing': 3,
+#   'authorization': 3,
+#   'banking': 3,
+#   'billing': 3,
+#   'budgeting': 3,
+#   'business administration': 3,
+#   'business development': 3,
+#   'c': 3,
+#   'case management': 3,
+#   'cash register': 3,
+#   'collaboration': 3,
+#   'community outreach': 3,
+#   'conflict resolution': 3,
+#   'crisis intervention': 3,
+#   'critical thinking': 3,
+#   'customer service': 4,
+#   'data entry': 3,
+#   ...
+#  }, 
+#  ...
+# }
+```
+
+
