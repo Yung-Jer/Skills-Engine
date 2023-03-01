@@ -47,12 +47,7 @@ In order to efficiently extract skills out from the resume, use free online **Em
     #     'mediation',
     #     'organizational development',
     #     'policy development',
-    #     'poultry',
-    #     'reduction',
-    #     'session',
-    #     'strong work ethic',
-    #     'teamwork',
-    #     'workplace safety'
+    #     ...
     # }
     ```
 
@@ -148,20 +143,72 @@ for col in agg_data.columns[1:]:
 #   'budgeting': 3,
 #   'business administration': 3,
 #   'business development': 3,
-#   'c': 3,
-#   'case management': 3,
-#   'cash register': 3,
-#   'collaboration': 3,
-#   'community outreach': 3,
-#   'conflict resolution': 3,
-#   'crisis intervention': 3,
-#   'critical thinking': 3,
-#   'customer service': 4,
-#   'data entry': 3,
 #   ...
 #  }, 
 #  ...
 # }
 ```
 
+## Step 5: Identification of Skill Gap
 
+With the significant skills identified for each industry, we can now make comparison between your skillset and the skillset required for the particular industry. We can do that by first mapping the years of experience into **pre-defined competency levels: 3 for entrant level, 4 for specialist level and 5 for expert level.**
+
+Example: The output will be a dictionary with skills as the `keys` and the skill gaps as the `values`
+
+```
+skill_gap_identification_peers(skills[31605080], skills_required['AVIATION'])
+
+# Output:
+# {'aircraft maintenance': [3],
+#  'aviation': [4, 5],
+#  'b': [3],
+#  'business administration': [3],
+#  'c': [3],
+#  'construction': [3],
+#  'critical thinking': [3],
+#  'drawing': [3],
+#  'filing': [3],
+#   ...
+#  'supervision': [3],
+#  'test equipment': [3],
+#  'time management': [3],
+#  'track': [3, 4],
+#  'tracking': [3]
+# }
+```
+
+## Step 6: Generating The Learning Path
+
+Once we successfully found out the skill gap between an applicant with the peer standard, we can suggest the applicant to a **continuous learning** programme which helps him to reach the peer standard, and even outperforming the peers in the specific industry. 
+
+Depending on how huge the skill gaps are, we could group skills into either **critical, strongly recommended, recommended, good to have, fulfilled**. We infer a word vector using all the skills from one section, with a Doc2Vec model pre-trained on all the available course information. Then, we find out several most similar courses with this infered word vector.
+
+Example: We infer a word vector using Doc2Vec and find unique most similar courses
+
+```
+vector = model.infer_vector(
+    ['marketing',
+     'microsoft office',
+     'microsoft word',
+     'negotiation',
+     'planning',
+     'process improvement',
+     'procurement',
+     'project management',
+     'purchasing',
+     'quality assurance',
+     'quality control'])
+     
+course_unique = set()
+course_list = []
+for i, prob in res:
+    if courses.loc[i, 'Marketing Name'] not in course_unique:
+        course_unique.add(courses.loc[i, 'Marketing Name'])
+        course_list.append((courses.loc[i, 'Marketing Name'], courses.loc[i, 'competencyLevel']))
+        
+# Output:
+# [('Omni Channel Commerce(OCC)', '3 - Entrant Level'),
+#  ('Omnicom Sales & Marketing', '3 - Entrant Level'),
+#  ...
+# ]
+```
