@@ -107,29 +107,13 @@ skills_experience_level_identification(resume_string)
 
 ## Step 4: Identification of Significant Skills
 
-We first assumed that all the candidates that are applying for a specific role **must** be qualified, i.e. they have all the skills required for the particular role. With this assumption, we can do aggregation for all the resumes that belong to the same category and find out which skills appear the most. The skills with high frequency indicate that they are the common skills required for the particular role. 
+We first assumed that all the candidates that are applying for a specific role **must** be qualified, i.e. they have all the skills required for the particular role. With this assumption, we can do aggregation for all the resumes that belong to the same category and find out the percentage of the resumes having certain skills. High percentage indicates that they are the common skills required for the particular role. 
 
-We then set the significance level $\alpha$ as .9, hence all the skills below 90 percentile will be treated as not so significant. 
+We then set the significance level $\alpha$ as .95, hence all the skills below 95 percentile will be treated as not so significant. 
 
 Example: We use the **percentile** method to set the threshold for classifying the skills that appear at least once, and decide if they are significant or not. Then, we scale the skills' frequency to the range of [0, 1]. This is to help us to decide whether if we need high level of skill competency to standout from peers. We save all the remaining skill with the corresponding competency level required into a dictionary
 
-```
-# agg_data is the dataset after doing groupby(['category']).sum()
-# find the threshold of 90 percentile
-np.percentile(agg_data['ACCOUNTANT'][agg_data['ACCOUNTANT'] != 0], 90)
-
-# If value > 0.7, skill level required is 5; 
-# If 0.7 >= value > 0.3, skill level required is 4;
-# If 0.3 >= value, skill level required is 3;
-skills_required = {}
-
-for col in agg_data.columns[1:]:
-    print(col)
-    series = agg_data[col][agg_data[col] > np.percentile(agg_data[col][agg_data[col] != 0], 90)]
-    scaled_series = series.apply(lambda x: (x - series.min()) / (series.max() - series.min()))
-    binned_series = scaled_series.apply(lambda x: 5 if x > 0.7 else 4 if x > 0.3 else 3)
-    skills_required[col] = binned_series.to_dict()
-    
+```   
 # Output: where the value is the competency level based on my client's business settings
 # {'ADVOCATE': 
 #  {'active listening': 3,
@@ -179,36 +163,23 @@ skill_gap_identification_peers(skills[31605080], skills_required['AVIATION'])
 
 ## Step 6: Generating The Learning Path
 
-Once we successfully found out the skill gap between an applicant with the peer standard, we can suggest the applicant to a **continuous learning** programme which helps him to reach the peer standard, and even outperforming the peers in the specific industry. 
+Once we successfully found out the skill gap between an applicant with the job and peer standard, we can suggest the applicant to **job** and **continuous learning** programmes which help the applicant to fulfill the skill gap, and even outperforming the peers in the specific industry. 
 
-Depending on how huge the skill gaps are, we could group skills into either **critical, strongly recommended, recommended, good to have, fulfilled**. We infer a word vector using all the skills from one section, with a Doc2Vec model pre-trained on all the available course information. Then, we find out several most similar courses with this infered word vector.
-
-Example: We infer a word vector using Doc2Vec and find unique most similar courses
+Example: We infer skills required in a vector form using Doc2Vec and find the top 5 unique most similar courses
 
 ```
-vector = model.infer_vector(
-    ['marketing',
-     'microsoft office',
-     'microsoft word',
-     'negotiation',
-     'planning',
-     'process improvement',
-     'procurement',
-     'project management',
-     'purchasing',
-     'quality assurance',
-     'quality control'])
-     
-course_unique = set()
-course_list = []
-for i, prob in res:
-    if courses.loc[i, 'Marketing Name'] not in course_unique:
-        course_unique.add(courses.loc[i, 'Marketing Name'])
-        course_list.append((courses.loc[i, 'Marketing Name'], courses.loc[i, 'competencyLevel']))
-        
 # Output:
-# [('Omni Channel Commerce(OCC)', '3 - Entrant Level'),
-#  ('Omnicom Sales & Marketing', '3 - Entrant Level'),
-#  ...
-# ]
+# {'job': 
+#        {
+#            3: [(7203,'Innovation and Entrepreneurship Capstone','3 - Entrant Level'), ...],
+#            4: [(4602, 'Express Data Base Administrator', '4 - Specialist Level'), ...],
+#            5: [(12502, 'Cyber Security Management Capstone Project','5 - Expert Level'), ...]
+#        },
+#  'continuous learning':
+#        {
+#            3: [(7203,'Innovation and Entrepreneurship Capstone','3 - Entrant Level'), ...],
+#            4: [(4602, 'Express Data Base Administrator', '4 - Specialist Level'), ...],
+#            5: [(12502, 'Cyber Security Management Capstone Project','5 - Expert Level'), ...]
+#        }
+# }
 ```
